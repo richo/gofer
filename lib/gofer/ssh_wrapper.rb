@@ -48,15 +48,25 @@ module Gofer
           end
 
           channel.on_data do |ch, data|  # stdout
-            stdout += data
-            output += data
+            if opts[:stdout].is_a? Proc
+              opts[:stdout].call(data)
+            else
+              stdout += data
+              output += data
+            end
+
             $stdout.print wrap_output(data, opts[:output_prefix]) unless opts[:quiet]
           end
 
           channel.on_extended_data do |ch, type, data|
             next unless type == 1 # only handle stderr
-            stderr += data
-            output += data
+            if opts[:stderr].is_a? Proc
+              opts[:stderr].call(data)
+            else
+              stderr += data
+              output += data
+            end
+
             $stderr.print wrap_output(data, opts[:output_prefix]) unless opts[:quiet_stderr]
           end
 
